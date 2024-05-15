@@ -2,8 +2,8 @@ suppressWarnings(library(Seurat))
 suppressWarnings(library(patchwork))
 suppressWarnings(library(sctransform))
 suppressWarnings(library(qs))
-#suppressWarnings(library(tidyverse))
-#suppressWarnings(library(Azimuth))
+suppressWarnings(library(tidyverse))
+suppressWarnings(library(Azimuth))
 
 process_seurat_object <- function(input_path) {
   # Attempt to read and process the Seurat object
