@@ -25,7 +25,7 @@ process_seurat_object <- function(input_path) {
 
     #cat("Finding markers...\n")
     #sample.markers <- FindAllMarkers(obj, assay = "SCT", only.pos = TRUE,
-                                     test.use = "negbinom", recorrect_umi = FALSE)
+                                    # test.use = "negbinom", recorrect_umi = FALSE)
 
     cat("Generating UMAP plot...\n")
     p1 <- DimPlot(obj, group.by = "predicted.subclass", label = TRUE, label.size = 3) +
