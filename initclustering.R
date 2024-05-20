@@ -23,8 +23,8 @@ process_seurat_object <- function(input_path) {
     cat("Running Azimuth mapping...\n")
     obj <- RunAzimuth(obj, reference = "humancortexref", assay = "SCT")
 
-    cat("Finding markers...\n")
-    sample.markers <- FindAllMarkers(obj, assay = "SCT", only.pos = TRUE,
+    #cat("Finding markers...\n")
+    #sample.markers <- FindAllMarkers(obj, assay = "SCT", only.pos = TRUE,
                                      test.use = "negbinom", recorrect_umi = FALSE)
 
     cat("Generating UMAP plot...\n")
@@ -34,20 +34,20 @@ process_seurat_object <- function(input_path) {
     # Save UMAP plot as PDF
     ggsave(paste0(outputname, "_UMAP.pdf"), p1, width = 10, height = 8)
 
-    cat("Filtering and preparing heatmap data...\n")
-    sample.markers %>%
-      group_by(cluster) %>%
-      dplyr::filter(avg_log2FC > 1) %>%
-      slice_head(n = 10) %>%
-      ungroup() -> top10
+    #cat("Filtering and preparing heatmap data...\n")
+    #sample.markers %>%
+     # group_by(cluster) %>%
+      #dplyr::filter(avg_log2FC > 1) %>%
+     # slice_head(n = 10) %>%
+      #ungroup() -> top10
 
-    cat("Generating heatmap...\n")
-    p2 <- DoHeatmap(obj, features = top10$gene, group.by = "predicted.subclass",
-                    label = TRUE, size = 3) +
-      ggtitle(paste(outputname, "Marker genes by class"))
+    #cat("Generating heatmap...\n")
+    #p2 <- DoHeatmap(obj, features = top10$gene, group.by = "predicted.subclass",
+                  #  label = TRUE, size = 3) +
+      #ggtitle(paste(outputname, "Marker genes by class"))
 
     # Save heatmap plot as PDF
-    ggsave(paste0(outputname, "_markerheatmap.pdf"), p2, width = 10, height = 8)
+    #ggsave(paste0(outputname, "_markerheatmap.pdf"), p2, width = 10, height = 8)
 
     # Save the processed Seurat object
     save_path = paste0(outputname, ".Rds")
@@ -55,7 +55,7 @@ process_seurat_object <- function(input_path) {
     saveRDS(obj, file = save_path)
 
     # Return the plots and save path of the RDS file
-    list(UMAP = p1, Heatmap = p2, RDS_Path = save_path)
+    list(UMAP = p1, RDS_Path = save_path)
 
   }, error = function(e) {
     cat("An error occurred: ", e$message, "\n")
@@ -71,5 +71,5 @@ if (length(args) == 0) {
   # Call the function with the provided file path
   results <- process_seurat_object(args[1])
   print(results$UMAP)
-  print(results$Heatmap)
+ # print(results$Heatmap)
 }
