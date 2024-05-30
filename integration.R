@@ -4,8 +4,7 @@ suppressMessages(suppressWarnings(library(tidyverse)))
 suppressMessages(suppressWarnings(library(future)))
 suppressMessages(suppressWarnings(library(future.apply)))
 suppressMessages(suppressWarnings(library(harmony)))
-suppressWarnings(library(Azimuth))
-
+suppressMessages(suppressWarnings(library(Azimuth)))
 options(future.globals.maxSize = 1000 * 64536^2)
 plan(multisession, workers = 16, gc = TRUE)
 
@@ -76,9 +75,11 @@ process_seurat_object <- function(meta_path, input_path) {
 
 # Parse command line arguments
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 2) {
+if (length(args) == 0) {
   stop("No file path provided. Please specify the path to a Seurat object file.")
 } else {
   # Call the function with the provided file path
-  process_seurat_object(meta_path, input_path) 
+  results <- process_seurat_object(args[1])
+  print(results$UMAP)
+ # print(results$Heatmap)
 }
