@@ -50,7 +50,7 @@ process_seurat_object <- function(meta_path, input_path) {
       SCTransform(vars.to.regress = c("mitoRatio")) %>%
       RunPCA(assay = "SCT", npcs = 50)
 
-    obj <- RunHarmony(obj, ncores = 10, 
+    obj <- RunHarmony(obj, ncores = 16, 
                       group.by.vars = c("Sample", "Cohort", "Batch"), 
                       reduction = "pca", assay.use = "SCT", reduction.save = "harmony")
     obj <- RunUMAP(obj, reduction = "harmony", assay = "SCT", dims = 1:50)
