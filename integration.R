@@ -13,7 +13,7 @@ process_seurat_object <- function(meta_path, input_path) {
   # Attempt to read and process the Seurat object
   tryCatch({
     cat("Loading and processing the Seurat object...\n")
-    obj <- qs::qread(input_path)
+    obj <- readRDS(input_path)
 
     # Join Layers and manipulate metadata
     obj <- JoinLayers(obj)
