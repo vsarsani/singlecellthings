@@ -3,8 +3,11 @@ suppressMessages(suppressWarnings(library(qs)))
 suppressMessages(suppressWarnings(library(tidyverse)))
 suppressMessages(suppressWarnings(library(harmony)))
 suppressMessages(suppressWarnings(library(Azimuth)))
-
-
+suppressMessages(suppressWarnings(library(SeuratWrappers)))
+library(future)
+library(future.apply)
+plan(multisession, workers = 16, gc = TRUE)
+options(future.globals.maxSize = 1000 * 64024^2)
 process_seurat_object <- function(meta_path, input_path) {
   # Attempt to read and process the Seurat object
   tryCatch({
@@ -39,10 +42,7 @@ process_seurat_object <- function(meta_path, input_path) {
     obj@meta.data <- filtered_metadata
     # Seurat processing with Harmony
     obj <- obj %>%
-      NormalizeData() %>%
-      FindVariableFeatures(selection.method = "vst", nfeatures = 2000) %>%
-      ScaleData() %>%
-      SCTransform(vars.to.regress = c("mitoRatio")) %>%
+      SCTransform(vars.to.regress = c("mitoRatio"),conserve.memory=TRUE,variable.features.n = 2000) %>%
       RunPCA(assay = "SCT", npcs = 50)
 
     obj <- RunHarmony(obj, ncores = 16, 
@@ -54,11 +54,11 @@ process_seurat_object <- function(meta_path, input_path) {
 
     # Running Azimuth and finding markers
     obj <- RunAzimuth(obj, reference = "humancortexref", assay = "SCT")
-    sample.markers <- FindAllMarkers(obj, assay = "SCT", logfc.threshold = 0.1, test.use = "MAST", slot = "SCT", random.seed = 1, latent.vars = c("Sample"))
+    sample.markers <- RunPrestoAll(obj, assay = "SCT", min.diff.pct=0.1,verbose = TRUE)
 
     # Save QS files
     qs::qsave(sample.markers, "sample.markers.qs")
-    qs::qsave(obj, "harmonized_annot.qs")
+    qs::qsave(obj, "harmonized.annot.qs")
 
     # Output paths of saved files
     list(Sample_Markers_Path = "sample.markers.qs", Harmonized_Annot_Path = "harmonized_annot.qs")
