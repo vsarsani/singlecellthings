@@ -4,10 +4,6 @@ suppressMessages(suppressWarnings(library(tidyverse)))
 suppressMessages(suppressWarnings(library(harmony)))
 suppressMessages(suppressWarnings(library(Azimuth)))
 suppressMessages(suppressWarnings(library(SeuratWrappers)))
-library(future)
-library(future.apply)
-plan(multisession, workers = 16, gc = TRUE)
-options(future.globals.maxSize = 1000 * 64024^2)
 process_seurat_object <- function(meta_path, input_path) {
   # Attempt to read and process the Seurat object
   tryCatch({
