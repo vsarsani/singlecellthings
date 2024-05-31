@@ -1,8 +1,6 @@
 suppressMessages(suppressWarnings(library(Seurat)))
 suppressMessages(suppressWarnings(library(qs)))
 suppressMessages(suppressWarnings(library(tidyverse)))
-suppressMessages(suppressWarnings(library(future)))
-suppressMessages(suppressWarnings(library(future.apply)))
 suppressMessages(suppressWarnings(library(harmony)))
 suppressMessages(suppressWarnings(library(Azimuth)))
 
@@ -39,8 +37,6 @@ process_seurat_object <- function(meta_path, input_path) {
     obj <- subset(obj, cells = rownames(filtered_metadata))
     filtered_metadata <- filtered_metadata[rownames(obj@meta.data), ]
     obj@meta.data <- filtered_metadata
-     options(future.globals.maxSize = 1000 * 64536^2)
-     plan(multisession, workers = 4, gc = TRUE)
     # Seurat processing with Harmony
     obj <- obj %>%
       NormalizeData() %>%
