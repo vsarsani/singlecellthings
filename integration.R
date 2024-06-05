@@ -1,64 +1,77 @@
-suppressMessages(suppressWarnings(library(Seurat)))
-suppressMessages(suppressWarnings(library(qs)))
-suppressMessages(suppressWarnings(library(tidyverse)))
-suppressMessages(suppressWarnings(library(harmony)))
-suppressMessages(suppressWarnings(library(Azimuth)))
-suppressMessages(suppressWarnings(library(SeuratWrappers)))
-process_seurat_object <- function(meta_path, input_path) {
+suppressWarnings(library(Seurat))
+suppressWarnings(library(patchwork))
+suppressWarnings(library(sctransform))
+suppressWarnings(library(qs))
+suppressWarnings(library(tidyverse))
+suppressWarnings(library(Azimuth))
+library(DoubletFinder)
+
+process_seurat_object <- function(input_path,ref_path) {
   # Attempt to read and process the Seurat object
   tryCatch({
     cat("Loading and processing the Seurat object...\n")
-    obj <- readRDS(input_path)
+    obj <- JoinLayers(qs::qread(input_path)) 
+    cells_filtered <-  rownames(obj@meta.data%>%filter(
+    between(nCount_RNA, quantile(nCount_RNA, 0.25) - 3 * IQR(nCount_RNA), quantile(nCount_RNA, 0.75) + 3 * IQR(nCount_RNA)),
+    between(nFeature_RNA, quantile(nFeature_RNA, 0.25) - 3 * IQR(nFeature_RNA), quantile(nFeature_RNA, 0.75) + 3 * IQR(nFeature_RNA)),
+    between(mitoRatio, quantile(mitoRatio, 0.25) - 3 * IQR(mitoRatio), quantile(mitoRatio, 0.75) + 3 * IQR(mitoRatio))))
+    obj <- subset(obj,cells=cells_filtered)
+      # Pre-process seurat object with standard seurat workflow
+  obj.sample <- NormalizeData(obj)
+ obj.sample <- FindVariableFeatures(obj.sample)
+  obj.sample <- ScaleData(obj.sample)
+  obj.sample <- RunPCA(obj.sample, nfeatures.print = 10)
+  
+  # Find significant PCs
+  stdv <- obj.sample[["pca"]]@stdev
+  sum.stdv <- sum(obj.sample[["pca"]]@stdev)
+  percent.stdv <- (stdv / sum.stdv) * 100
+  cumulative <- cumsum(percent.stdv)
+  co1 <- which(cumulative > 90 & percent.stdv < 5)[1]
+  co2 <- sort(which((percent.stdv[1:length(percent.stdv) - 1] - 
+                       percent.stdv[2:length(percent.stdv)]) > 0.1), 
+              decreasing = T)[1] + 1
+  min.pc <- min(co1, co2)
+   # finish pre-processing
+  obj.sample <- RunUMAP(obj.sample, dims = 1:min.pc)
+ obj.sample <- FindNeighbors(object = obj.sample, dims = 1:min.pc)              
+  obj.sample <- FindClusters(object = obj.sample, resolution = 0.2)
+ annotations <- obj.sample@meta.data$seurat_clusters
+homotypic.prop <- modelHomotypic(annotations) 
+nExp.poi <- (0.066+0.000757*nrow(obj.sample@meta.data))/100*nrow(obj.sample@meta.data)
+nExp.poi.adj <- round(nExp.poi * (1 - homotypic.prop))
+doublet.obj <- doubletFinder(seu = obj.sample,PCs = 1:min.pc,  
+                                   pK = (0.066+0.000757*nrow(obj.sample@meta.data))/100,
+                                   nExp = nExp.poi.adj,sct=TRUE)
+colnames(doublet.obj@meta.data)[8]  <- "doublet_finder"
+obj.singlets <- subset(doublet.obj, doublet_finder == "Singlet")
+newobj <- obj.singlets %>%
+      SCTransform(variable.features.n = 2000, conserve.memory = TRUE,
+                  vars.to.regress = c("mitoRatio")) %>%
+      RunPCA(dims = 1:min.pc) %>%
+      FindNeighbors(dims = 1:min.pc) %>%
+      FindClusters(resolution = 0.2, algorithm = 1) %>%
+      RunUMAP(dims = 1:min.pc)
+      obj <- RunAzimuth(newobj, reference = "humancortexref", assay = "SCT")
+reference <- readRDS(ref_path)
+outputname <- unique(obj@meta.data$orig.ident
+p1 <- DimPlot(reference, reduction = "refUMAP", group.by = "subclass", label = TRUE, label.size = 3,
+    repel = TRUE) + NoLegend() + ggtitle("Reference annotations")
+p2 <- DimPlot(obj, reduction = "umap", group.by = "predicted.subclass", label = TRUE,
+    label.size = 3, repel = TRUE) + NoLegend() + ggtitle(paste(outputname, "Query transferred labels"))
+p <- p1 + p2
 
-    # Join Layers and manipulate metadata
-    obj <- JoinLayers(obj)
-    obj_meta <- obj@meta.data %>%
-      mutate(Sample = gsub("-Dejager", "_Dejager", orig.ident)) %>%
-      rownames_to_column("Cell") %>%
-      mutate(
-        Barcode = str_extract(Cell, "[ATGC]{16}"),
-        Clean_Sample = if_else(!is.na(Barcode), str_extract(Cell, paste0(".*", Barcode)), Sample),
-        Sample_barcode = if_else(!is.na(Barcode), Clean_Sample, Cell)
-      ) %>%
-      group_by(Sample_barcode) %>%
-      mutate(id = row_number(), Sample_barcode = if(n() > 1) paste(Sample_barcode, id, sep = "-") else Sample_barcode) %>%
-      ungroup() %>%
-      select(-id) %>%
-      dplyr::select(Cell, Sample_barcode)
+metadata_csv <- obj@meta.data %>%rownames_to_column("Cell")
 
-    # Metadata filtering and merging
-    df_meta <- read.csv(meta_path)  # Assuming meta_path is a path to a CSV file
-    filtered_metadata <- merge(obj_meta, df_meta %>% rename(Sample_barcode = Cell), by = "Sample_barcode") %>%
-      column_to_rownames("Cell") %>%
-      filter(!is.na(Batch) & !is.na(mitoRatio) & Batch %in% c(1, 2) & !is.na(Cohort)) %>%
-      rename(orig_predicted.cluster = predicted.cluster, orig_predicted.cluster.score = predicted.cluster.score)
+    # Save UMAP plot as PDF
+ggsave(paste0(outputname, "_UMAP.pdf"), p, width = 10, height = 8)
+save_path = paste0(outputname, "_metadata.csv")
+write.csv(metadata_csv ,save_path,quote=FALSE,row.names=FALSE)
 
-    obj <- subset(obj, cells = rownames(filtered_metadata))
-    filtered_metadata <- filtered_metadata[rownames(obj@meta.data), ]
-    obj@meta.data <- filtered_metadata
-    # Seurat processing with Harmony
-    obj <- obj %>%
-      SCTransform(vars.to.regress = c("mitoRatio"),conserve.memory=TRUE,variable.features.n = 2000) %>%
-      RunPCA(assay = "SCT", npcs = 50)
 
-    obj <- RunHarmony(obj, ncores = 16, 
-                      group.by.vars = c("Sample", "Cohort", "Batch"), 
-                      reduction = "pca", assay.use = "SCT", reduction.save = "harmony")
-    obj <- RunUMAP(obj, reduction = "harmony", assay = "SCT", dims = 1:50)
-    obj <- FindNeighbors(object = obj, reduction = "harmony")
-    obj <- FindClusters(obj, resolution = c(0.2, 0.4, 0.6, 0.8))
+    # Return the plots and save path of the RDS file
+    list(UMAP = p1, RDS_Path = save_path)
 
-    # Running Azimuth and finding markers
-    obj <- RunAzimuth(obj, reference = "humancortexref", assay = "SCT")
-    sample.markers <- RunPrestoAll(obj, assay = "SCT", min.diff.pct=0.1,verbose = TRUE)
-
-    # Save QS files
-    qs::qsave(sample.markers, "sample.markers.qs")
-    qs::qsave(obj, "harmonized.annot.qs")
-
-    # Output paths of saved files
-    list(Sample_Markers_Path = "sample.markers.qs", Harmonized_Annot_Path = "harmonized_annot.qs")
-    
   }, error = function(e) {
     cat("An error occurred: ", e$message, "\n")
     NULL
@@ -67,13 +80,11 @@ process_seurat_object <- function(meta_path, input_path) {
 
 # Parse command line arguments
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 2) {
+if (length(args) == 0) {
   stop("No file path provided. Please specify the path to a Seurat object file.")
 } else {
   # Call the function with the provided file path
-   meta_path <- args[1]  # First argument: Path to metadata CSV file
-  input_path <- args[2]  # Second argument: Path to the input Seurat object file
-   process_seurat_object(meta_path, input_path)
-  
- 
+  results <- process_seurat_object(args[1])
+  print(results$UMAP)
+ # print(results$Heatmap)
 }
