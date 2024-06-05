@@ -1,3 +1,12 @@
+suppressWarnings(library(Seurat))
+suppressWarnings(library(qs))
+suppressWarnings(library(tidyverse))
+suppressWarnings(library(Azimuth))
+library(DoubletFinder)
+
+
+
+
 process_seurat_object <- function(input_path, ref_path) {
   # Attempt to read and process the Seurat object
   tryCatch({
@@ -7,7 +16,7 @@ process_seurat_object <- function(input_path, ref_path) {
       between(nCount_RNA, quantile(nCount_RNA, 0.25) - 3 * IQR(nCount_RNA), quantile(nCount_RNA, 0.75) + 3 * IQR(nCount_RNA)),
       between(nFeature_RNA, quantile(nFeature_RNA, 0.25) - 3 * IQR(nFeature_RNA), quantile(nFeature_RNA, 0.75) + 3 * IQR(nFeature_RNA)),
       between(mitoRatio, quantile(mitoRatio, 0.25) - 3 * IQR(mitoRatio), quantile(mitoRatio, 0.75) + 3 * IQR(mitoRatio))
-    )))
+    ))
     obj <- subset(obj, cells = cells_filtered)
 
     # Pre-process Seurat object with standard Seurat workflow
@@ -77,4 +86,3 @@ if (length(args) == 0) {
   results <- process_seurat_object(args[1], args[2])
   print(results$UMAP)
 }
-
