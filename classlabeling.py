@@ -59,12 +59,14 @@ def preprocess(sample_file, reference_file, sampleprefix):
     sample_filtered.obs['doublet_scores'] = doublet_scores
     sample_filtered.obs['predicted_doublets'] = predicted_doublets
 
-    ## Check if 'predicted_doublets' exists and is not None
+    # Check if 'predicted_doublets' exists and is not None
     if 'predicted_doublets' in sample_filtered.obs and sample_filtered.obs['predicted_doublets'] is not None:
-        sample_filtered = sample_filtered[~sample_filtered.obs['predicted_doublets']].copy()
+        if sample_filtered.obs['predicted_doublets'].isnull().all():
+            print("Column 'predicted_doublets' is all None, proceeding without filtering.")
+        else:
+            sample_filtered = sample_filtered[~sample_filtered.obs['predicted_doublets']].copy()
     else:
         print("Column 'predicted_doublets' not found or is None, proceeding without filtering.")
-
     # Filter out predicted doublets
     sample_filtered = sample_filtered[~sample_filtered.obs['predicted_doublets']].copy()
 
