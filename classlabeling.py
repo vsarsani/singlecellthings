@@ -52,12 +52,12 @@ def preprocess(sample_file, reference_file, sampleprefix):
     doublet_rate = (0.066 + 0.000757 * num_cells) / 100
 
     # Run Scrublet
-    scrub = scr.Scrublet(sample_filtered.X, expected_doublet_rate=doublet_rate)
-    doublet_scores, predicted_doublets = scrub.scrub_doublets()
+    #scrub = scr.Scrublet(sample_filtered.X, expected_doublet_rate=doublet_rate)
+    #doublet_scores, predicted_doublets = scrub.scrub_doublets()
 
     # Add Scrublet results to sample
-    sample_filtered.obs['doublet_scores'] = doublet_scores
-    sample_filtered.obs['predicted_doublets'] = predicted_doublets
+    #sample_filtered.obs['doublet_scores'] = doublet_scores
+    #sample_filtered.obs['predicted_doublets'] = predicted_doublets
 
     # Handle None values in 'predicted_doublets'
     #if 'predicted_doublets' in sample_filtered.obs:
@@ -70,7 +70,7 @@ def preprocess(sample_file, reference_file, sampleprefix):
     #sample_filtered = sample_filtered[~sample_filtered.obs['predicted_doublets']].copy()
 
     # Save filtered dataset
-    sample_filtered.write_h5ad(f"{sampleprefix}_filtered.h5ad")
+    #sample_filtered.write_h5ad(f"{sampleprefix}_filtered.h5ad")
 
     logging.info(f"Filtered dataset saved with {sample_filtered.shape[0]} cells.")
     sc.pp.normalize_total(sample_filtered, target_sum=1e4)
