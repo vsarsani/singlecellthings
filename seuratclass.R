@@ -60,7 +60,11 @@ process_and_classify <- function(input_path, ref_rds_path, ref_annoy_path, outpu
     
     # Continue with classification
     cat("Loading the reference map...\n")
-    map <- readRDS(ref_rds_path)
+    ref.names <- list(
+    map = ref_rds_path,
+    ann = ref_annoy_path
+  )
+    map <- readRDS(ref.names$map)
     reference <- map
     dims <- as.double(slot(reference, "neighbors")$refdr.annoy.neighbors@alg.info$ndim)
     meta.data <- names(slot(reference, "meta.data"))
