@@ -7,7 +7,7 @@ suppressWarnings(library(Azimuth))
 suppressWarnings(library(DoubletFinder))
 
 # Define the function for processing and classifying the Seurat object
-process_and_classify <- function(input_path) {
+process_and_classify <- function(input_path, ref_rds_path, ref_annoy_path, output_path) {
   tryCatch({
     cat("Loading and processing the Seurat object...\n")
     obj <- JoinLayers(qs::qread(input_path))
@@ -60,20 +60,16 @@ process_and_classify <- function(input_path) {
     
     # Continue with classification
     cat("Loading the reference map...\n")
-    ref.names <- list(
-    map = 'ref.Rds',
-    ann = 'idx.annoy')
-    map <- readRDS(ref.names$map)
+    map <- readRDS(ref_rds_path)
     reference <- map
-dims <- as.double(slot(reference, "neighbors")$refdr.annoy.neighbors@alg.info$ndim)
-meta.data <- names(slot(reference, "meta.data"))
-
+    dims <- as.double(slot(reference, "neighbors")$refdr.annoy.neighbors@alg.info$ndim)
+    meta.data <- names(slot(reference, "meta.data"))
     
     anchors <- FindTransferAnchors(
       reference = reference,
       query = obj,
       k.filter = NA,
-      reference.neighbors = "refdr.annoy.neighbors",
+      reference.neighbors = ref_annoy_path,
       reference.assay = "refAssay",
       query.assay = "SCT",
       reference.reduction = "refDR",
@@ -135,6 +131,10 @@ meta.data <- names(slot(reference, "meta.data"))
       col.name = "mapping.score"
     )
     
+    # Save the classified Seurat object
+    qsave(query, output_path)
+    cat("Classified Seurat object saved to", output_path, "\n")
+    
     return(query)
   }, error = function(e) {
     cat("An error occurred: ", e$message, "\n")
@@ -144,10 +144,12 @@ meta.data <- names(slot(reference, "meta.data"))
 
 # Main script to parse arguments and call the function
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) !=1) {
-  stop("Please provide the input Seurat object path and the reference map path.")
+if (length(args) != 4) {
+  stop("Please provide the input Seurat object path, the reference RDS path, the reference Annoy path, and the output path.")
 } else {
   input_path <- args[1]
-  result <- process_and_classify(input_path)
-  print(result)
+  ref_rds_path <- args[2]
+  ref_annoy_path <- args[3]
+  output_path <- args[4]
+  result <- process_and_classify(input_path, ref_rds_path, ref_annoy_path, output_path)
 }
