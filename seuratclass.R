@@ -50,7 +50,7 @@ process_and_classify <- function(input_path, ref_rds_path, ref_annoy_path, outpu
     obj.singlets <- subset(doublet.obj, doublet_finder == "Singlet")
     
     newobj <- obj.singlets %>%
-      SCTransform(variable.features.n = 2000, conserve.memory = TRUE, vars.to.regress = c("mitoRatio")) %>%
+      SCTransform(variable.features.n = 2000, ncells=6000,conserve.memory = TRUE, vars.to.regress = c("mitoRatio")) %>%
       RunPCA(dims = 1:30) %>%
       FindNeighbors(dims = 1:30) %>%
       FindClusters(resolution = 0.2, algorithm = 1) %>%
