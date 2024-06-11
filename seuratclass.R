@@ -78,7 +78,7 @@ process_and_classify <- function(input_path, ref_rds_path, ref_annoy_path, outpu
       reference = reference,
       query = obj,
       k.filter = NA,
-      reference.neighbors = ref_annoy_path,
+      reference.neighbors =  "refdr.annoy.neighbors",
       reference.assay = "refAssay",
       query.assay = "SCT",
       reference.reduction = "refDR",
