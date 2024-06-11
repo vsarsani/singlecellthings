@@ -69,10 +69,32 @@ process_and_classify <- function(input_path, ref_rds_path, ref_annoy_path, outpu
     object = map[["refdr.annoy.neighbors"]],
     file = file.path(ref.names$ann)
   )
-    
+
     reference <- map
     dims <- as.double(slot(reference, "neighbors")$refdr.annoy.neighbors@alg.info$ndim)
     meta.data <- names(slot(reference, "meta.data"))
+    NNTransform <- function(
+  object,
+  meta.data,
+  neighbor.slot = "query_ref.nn",
+  key = 'ori.index'
+) {
+  on.exit(expr = gc(verbose = FALSE))
+  ind <- Indices(object[[neighbor.slot]])
+  ori.index <- t(x = sapply(
+    X = 1:nrow(x = ind),
+    FUN = function(i) {
+      return(meta.data[ind[i, ], key])
+    }
+  ))
+  rownames(x = ori.index) <- rownames(x = ind)
+  slot(object = object[[neighbor.slot]], name = "nn.idx") <- ori.index
+  return(object)
+}
+
+
+
+    
     
     anchors <- FindTransferAnchors(
       reference = reference,
