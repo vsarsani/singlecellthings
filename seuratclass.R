@@ -4,6 +4,7 @@ suppressWarnings(library(future))
 suppressWarnings(library(qs))
 suppressWarnings(library(tidyverse))
 suppressWarnings(library(Azimuth))
+suppressWarnings(library(DoubletFinder))
 
 # Define the function for processing and classifying the Seurat object
 process_and_classify <- function(input_path, ref_map_path) {
