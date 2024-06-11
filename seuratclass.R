@@ -65,6 +65,11 @@ process_and_classify <- function(input_path, ref_rds_path, ref_annoy_path, outpu
     ann = ref_annoy_path
   )
     map <- readRDS(ref.names$map)
+    map[["refdr.annoy.neighbors"]] <- LoadAnnoyIndex(
+    object = map[["refdr.annoy.neighbors"]],
+    file = file.path(ref.names$ann)
+  )
+    
     reference <- map
     dims <- as.double(slot(reference, "neighbors")$refdr.annoy.neighbors@alg.info$ndim)
     meta.data <- names(slot(reference, "meta.data"))
