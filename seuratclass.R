@@ -7,7 +7,7 @@ suppressWarnings(library(Azimuth))
 suppressWarnings(library(DoubletFinder))
 
 # Define the function for processing and classifying the Seurat object
-process_and_classify <- function(input_path, ref_map_path) {
+process_and_classify <- function(input_path) {
   tryCatch({
     cat("Loading and processing the Seurat object...\n")
     obj <- JoinLayers(qs::qread(input_path))
@@ -144,11 +144,10 @@ meta.data <- names(slot(reference, "meta.data"))
 
 # Main script to parse arguments and call the function
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 2) {
+if (length(args) !=1) {
   stop("Please provide the input Seurat object path and the reference map path.")
 } else {
   input_path <- args[1]
-  ref_map_path <- args[2]
-  result <- process_and_classify(input_path, ref_map_path)
+  result <- process_and_classify(input_path)
   print(result)
 }
