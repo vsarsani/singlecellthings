@@ -148,7 +148,7 @@ def main(sample_file, reference_file, pickl_ref1, pickl_ref2, sampleprefix):
     sample_added_annots_integ.obs.to_csv(f"{sampleprefix}_annotated.csv")
 
     # Define the list of columns to plot
-    colors = ['Class_8', 'predicted_class', 'Class_celltypist_label', 'Subclass', 'predicted_subclass', 'Subclass_celltypist_label']
+    colors = [ 'predicted_class', 'Class_celltypist_label', 'Subclass', 'predicted_subclass', 'Subclass_celltypist_label']
 
     # Plot UMAP with specified colors and layout, and save to PDF
     sc.pl.umap(sample_added_annots_integ, color=colors, wspace=0.5, ncols=3, save=f"{sampleprefix}_plot.pdf")
