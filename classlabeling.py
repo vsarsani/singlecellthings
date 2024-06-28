@@ -52,12 +52,12 @@ def preprocess(sample_file, reference_file, sampleprefix):
     doublet_rate = (0.066 + 0.000757 * num_cells) / 100
 
     # Run Scrublet
-    #scrub = scr.Scrublet(sample_filtered.X, expected_doublet_rate=doublet_rate)
-    #doublet_scores, predicted_doublets = scrub.scrub_doublets()
+    scrub = scr.Scrublet(sample_filtered.X, expected_doublet_rate=doublet_rate)
+    doublet_scores, predicted_doublets = scrub.scrub_doublets()
 
     # Add Scrublet results to sample
-    #sample_filtered.obs['doublet_scores'] = doublet_scores
-    #sample_filtered.obs['predicted_doublets'] = predicted_doublets
+    sample_filtered.obs['doublet_scores'] = doublet_scores
+    sample_filtered.obs['predicted_doublets'] = predicted_doublets
 
     # Handle None values in 'predicted_doublets'
     #if 'predicted_doublets' in sample_filtered.obs:
@@ -67,10 +67,9 @@ def preprocess(sample_file, reference_file, sampleprefix):
             #sample_filtered = sample_filtered[~sample_filtered.obs['predicted_doublets']].copy()
 
     # Filter out predicted doublets
-    #sample_filtered = sample_filtered[~sample_filtered.obs['predicted_doublets']].copy()
+    sample_filtered = sample_filtered[~sample_filtered.obs['predicted_doublets']].copy()
 
-    # Save filtered dataset
-    #sample_filtered.write_h5ad(f"{sampleprefix}_filtered.h5ad")
+
 
     logging.info(f"Filtered dataset saved with {sample_filtered.shape[0]} cells.")
     sc.pp.normalize_total(sample_filtered, target_sum=1e4)
@@ -84,11 +83,7 @@ def preprocess(sample_file, reference_file, sampleprefix):
     sample_filtered = sample_filtered[:, reference.var_names]
     return sample_filtered
 
-# Ingestion
-def ingest(sample, reference_file):
-    reference = sc.read_h5ad(reference_file, chunk_size=10000)
-    sc.tl.ingest(sample, reference, obs=["Class_8", "Subclass"])
-    return sample
+
 
 # Integration and label transfer
 def integrate_and_transfer(sample, reference_file):
@@ -141,8 +136,7 @@ def run_celltypist(sample, pickl_ref1, pickl_ref2):
 # Main function
 def main(sample_file, reference_file, pickl_ref1, pickl_ref2, sampleprefix):
     sample_filtered = preprocess(sample_file, reference_file, sampleprefix)
-    sample_added_annots = ingest(sample_filtered, reference_file)
-    sample_added_annots_integ = integrate_and_transfer(sample_added_annots, reference_file)
+    sample_added_annots_integ = integrate_and_transfer(sample_filtered, reference_file)
     celltypist1, celltypist2 = run_celltypist(sample_added_annots_integ, pickl_ref1, pickl_ref2)
     sample_added_annots_integ.obs['Class_celltypist_label'] = celltypist1.predicted_labels['majority_voting']
     sample_added_annots_integ.obs['Subclass_celltypist_label'] = celltypist2.predicted_labels['majority_voting']
@@ -160,6 +154,7 @@ def main(sample_file, reference_file, pickl_ref1, pickl_ref2, sampleprefix):
     sc.pl.umap(sample_added_annots_integ, color=colors, wspace=0.5, ncols=3, save=f"{sampleprefix}_plot.pdf")
 
     logging.info(f"Saved annotated data to {sampleprefix}_annotated.h5ad, {sampleprefix}_annotated.csv, and UMAP plot to {sampleprefix}_plot.pdf.")
+    sample_added_annots_integ.write_h5ad(f"{sampleprefix}_filtered.h5ad")
 
 if __name__ == "__main__":
     # Set up argument parser
