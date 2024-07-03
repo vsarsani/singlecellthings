@@ -42,9 +42,11 @@ def main(args):
     # UMAP and Leiden clustering
     sc.tl.umap(adata)
     
-    resolutions = [float(r) for r in args.resolutions.split()]
-    for res in resolutions:
-        sc.tl.leiden(adata, resolution=res, key_added=f'leiden_{res:.2f}')
+    
+    sc.tl.leiden(adata, resolution=0.25, key_added=f'leiden_{0.25:.2f}')
+    sc.tl.leiden(adata, resolution=0.50, key_added=f'leiden_{0.50:.2f}')
+    sc.tl.leiden(adata, resolution=0.75, key_added=f'leiden_{0.75:.2f}')
+    sc.tl.leiden(adata, resolution=1, key_added=f'leiden_{1:.2f}')
     
     # Create a trimmed down h5ad file
     adata_new = sc.read_h5ad(args.input_file)
@@ -73,7 +75,6 @@ if __name__ == "__main__":
     parser.add_argument('--n_top_genes', type=int, required=True, help='Number of top genes')
     parser.add_argument('--n_neighbors', type=int, required=True, help='Number of neighbors for UMAP and Leiden')
     parser.add_argument('--n_comps', type=int, required=True, help='Number of principal components')
-    parser.add_argument('--resolutions', type=str, required=True, help='Leiden clustering resolutions as a space-separated string, e.g., "0.25 0.50 0.75 1.0"')
     parser.add_argument('--output_file', type=str, required=True, help='Output file name')
     
     args = parser.parse_args()
