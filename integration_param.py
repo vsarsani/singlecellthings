@@ -73,7 +73,7 @@ if __name__ == "__main__":
     parser.add_argument('--n_top_genes', type=int, required=True, help='Number of top genes')
     parser.add_argument('--n_neighbors', type=int, required=True, help='Number of neighbors for UMAP and Leiden')
     parser.add_argument('--n_comps', type=int, required=True, help='Number of principal components')
-    parser.add_argument('--resolutions', type=str, required=True, help='Comma-separated Leiden clustering resolutions')
+    parser.add_argument('--resolutions', nargs='+', type=float, required=True, help='Leiden clustering resolutions as space-separated floats, e.g., 0.25 0.50 0.75 1.0')
     parser.add_argument('--output_file', type=str, required=True, help='Output h5ad file')
     
     args = parser.parse_args()
