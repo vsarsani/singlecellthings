@@ -43,10 +43,10 @@ def main(args):
     sc.tl.umap(adata)
     
     
-    sc.tl.leiden(adata, resolution=0.25, key_added=f'leiden_{0.25:.2f}')
-    sc.tl.leiden(adata, resolution=0.50, key_added=f'leiden_{0.50:.2f}')
-    sc.tl.leiden(adata, resolution=0.75, key_added=f'leiden_{0.75:.2f}')
-    sc.tl.leiden(adata, resolution=1, key_added=f'leiden_{1:.2f}')
+    sc.tl.leiden(adata, resolution=0.25, key_added='leiden_025')
+    sc.tl.leiden(adata, resolution=0.50, key_added='leiden_050')
+    sc.tl.leiden(adata, resolution=0.75, key_added='leiden_075')
+    sc.tl.leiden(adata, resolution=1, key_added='leiden_1')
     
     # Create a trimmed down h5ad file
     adata_new = sc.read_h5ad(args.input_file)
@@ -56,9 +56,11 @@ def main(args):
     
     columns_to_copy = [
         'Sample', 'nCount_RNA', 'nFeature_RNA', 'mitoRatio',
-        'old.predicted.Subclass', 'old.predicted.Supertype', 'Cohort'
+        'old.predicted.Subclass', 'old.predicted.Supertype', 'Cohort', 'leiden_025',
+        'leiden_050', 'leiden_075', 'leiden_1'
     ]
-    columns_to_copy.extend([f'leiden_{res:.2f}' for res in resolutions])
+    
+   
     
     for column in columns_to_copy:
         adata_w.obs[column] = adata.obs[column].copy()
