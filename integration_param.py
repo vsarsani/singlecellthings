@@ -42,7 +42,7 @@ def main(args):
     # UMAP and Leiden clustering
     sc.tl.umap(adata)
     
-    resolutions = [float(r) for r in args.resolutions.split(',')]
+    resolutions = [float(r) for r in args.resolutions]
     for res in resolutions:
         sc.tl.leiden(adata, resolution=res, key_added=f'leiden_{res:.2f}')
     
