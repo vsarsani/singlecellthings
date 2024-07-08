@@ -120,7 +120,8 @@ def integrate_and_transfer(sample, reference_file):
     sample.obs['predicted_class'] = class_def
     subclass_def = label_transfer(distances_harmony, reference.obs.Subclass, sample.obs.index)
     sample.obs['predicted_subclass'] = subclass_def
-    
+    supertype_def = label_transfer(distances_harmony, reference.obs.Supertype, sample.obs.index)
+    sample.obs['predicted_supertype'] = supertype_def
     logging.info("Integration and transfer completed.")
     
     return sample
@@ -141,20 +142,10 @@ def main(sample_file, reference_file, pickl_ref1, pickl_ref2, sampleprefix):
     sample_added_annots_integ.obs['Class_celltypist_label'] = celltypist1.predicted_labels['majority_voting']
     sample_added_annots_integ.obs['Subclass_celltypist_label'] = celltypist2.predicted_labels['majority_voting']
 
-    # Save the annotated AnnData object
-    sample_added_annots_integ.write_h5ad(f"{sampleprefix}_annotated.h5ad")
-
     # Save the obs DataFrame to a CSV file
     sample_added_annots_integ.obs.to_csv(f"{sampleprefix}_annotated.csv")
 
-    # Define the list of columns to plot
-    colors = [ 'predicted_class', 'Class_celltypist_label', 'predicted_subclass', 'Subclass_celltypist_label']
-
-    # Plot UMAP with specified colors and layout, and save to PDF
-    sc.pl.umap(sample_added_annots_integ, color=colors, wspace=0.5, ncols=3, save=f"{sampleprefix}_plot.pdf")
-
-    logging.info(f"Saved annotated data to {sampleprefix}_annotated.h5ad, {sampleprefix}_annotated.csv, and UMAP plot to {sampleprefix}_plot.pdf.")
-    sample_added_annots_integ.write_h5ad(f"{sampleprefix}_filtered.h5ad")
+    logging.info(f"Saved annotated data to  {sampleprefix}_annotated.csv")
 
 if __name__ == "__main__":
     # Set up argument parser
