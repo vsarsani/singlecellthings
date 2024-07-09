@@ -13,8 +13,8 @@ def main(args):
     adata = sc.read_h5ad(args.input_file)
     
     # Add the new category 'Mathys' to the 'Cohort' column
-    adata.obs['Cohort'] = adata.obs['Cohort'].cat.add_categories('Mathys')
-    adata.obs['Cohort'].fillna('Mathys', inplace=True)
+    #adata.obs['Cohort'] = adata.obs['Cohort'].cat.add_categories('Mathys')
+    #adata.obs['Cohort'].fillna('Mathys', inplace=True)
     
     # Remove MT, ribosomal, and hemoglobin genes
     mito_genes = adata.var_names.str.startswith('MT-')
@@ -56,7 +56,7 @@ def main(args):
     
     columns_to_copy = [
         'Sample', 'nCount_RNA', 'nFeature_RNA', 'mitoRatio',
-        'old.predicted.Subclass', 'old.predicted.Supertype', 'Cohort', 'leiden_025',
+        'Cohort', 'leiden_025',
         'leiden_050', 'leiden_075', 'leiden_1'
     ]
     
