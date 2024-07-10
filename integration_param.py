@@ -35,7 +35,7 @@ def main(args):
     sc.pp.neighbors(adata, n_neighbors=args.n_neighbors, n_pcs=args.n_comps)
     
     # Harmony integration
-    sce.pp.harmony_integrate(adata, ['Cohort', 'Sample'], verbose=1, max_iter_harmony=50)
+    sce.pp.harmony_integrate(adata, ['Cohort', 'Sample'], verbose=1, max_iter_harmony=50,theta=args.theta,nclust=args.nclust)
     adata.obsm['X_pca'] = adata.obsm['X_pca_harmony']
     sc.pp.neighbors(adata, n_neighbors=args.n_neighbors, n_pcs=args.n_comps)
     
@@ -64,7 +64,7 @@ def main(args):
     
     for column in columns_to_copy:
         adata_w.obs[column] = adata.obs[column].copy()
-    
+    adata_w.obsm['X_pca'] = adata.obsm['X_pca']
     adata_w.obsm['X_umap'] = adata.obsm['X_umap']
     
     # Write the output h5ad file
@@ -77,6 +77,8 @@ if __name__ == "__main__":
     parser.add_argument('--n_top_genes', type=int, required=True, help='Number of top genes')
     parser.add_argument('--n_neighbors', type=int, required=True, help='Number of neighbors for UMAP and Leiden')
     parser.add_argument('--n_comps', type=int, required=True, help='Number of principal components')
+    parser.add_argument('--theta', type=int, required=True, help='Diversity parameter')
+    parser.add_argument('--nclust', type=int, required=True, help='Number of clusters')
     parser.add_argument('--output_file', type=str, required=True, help='Output file name')
     
     args = parser.parse_args()
