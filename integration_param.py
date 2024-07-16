@@ -35,7 +35,7 @@ def main(args):
     sc.pp.neighbors(adata, n_neighbors=args.n_neighbors, n_pcs=args.n_comps)
     
     # Harmony integration
-    sce.pp.harmony_integrate(adata, ['Sample','Cohort'], verbose=1, max_iter_harmony=100,theta=args.theta,nclust=args.nclust)
+    sce.pp.harmony_integrate(adata, ['Cohort','Sample'], verbose=1, max_iter_harmony=100,theta=args.theta,nclust=args.nclust)
     adata.obsm['X_pca'] = adata.obsm['X_pca_harmony']
     sc.pp.neighbors(adata, n_neighbors=args.n_neighbors, n_pcs=args.n_comps)
     
