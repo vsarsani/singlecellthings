@@ -29,7 +29,7 @@ def main(args):
     sc.pp.log1p(adata)
     sc.pp.highly_variable_genes(adata, n_top_genes=args.n_top_genes, batch_key=args.batch_key)
     def scale_by_batch(adata: ad.AnnData, batch_key: str) -> ad.AnnData:
-    return ad.concat(
+        return ad.concat(
         {
             k: sc.pp.scale(adata[idx], copy=True)
             for k, idx in adata.obs.groupby(batch_key).indices.items()
