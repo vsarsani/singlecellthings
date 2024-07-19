@@ -17,29 +17,29 @@ def main(args):
     #adata.obs['Cohort'].fillna('Mathys', inplace=True)
     
     # Remove MT, ribosomal, and hemoglobin genes
-    mito_genes = adata.var_names.str.startswith('MT-')
-    ribo_genes = adata.var_names.str.startswith(("RPS", "RPL"))
-    hb_genes = adata.var_names.str.contains("^HB[^(P)]")
-    remove = np.logical_or.reduce((mito_genes, ribo_genes, hb_genes))
-    keep = np.invert(remove)
+    #mito_genes = adata.var_names.str.startswith('MT-')
+    #ribo_genes = adata.var_names.str.startswith(("RPS", "RPL"))
+    #hb_genes = adata.var_names.str.contains("^HB[^(P)]")
+    #remove = np.logical_or.reduce((mito_genes, ribo_genes, hb_genes))
+    keep=np.invert(adata.var['exclude'])
+    #keep = np.invert(remove)
     adata = adata[:, keep]
     
     # Normalize, log transform, and find highly variable genes
     sc.pp.normalize_total(adata, target_sum=1e4)
     sc.pp.log1p(adata)
     sc.pp.highly_variable_genes(adata, n_top_genes=args.n_top_genes, batch_key=args.batch_key)
-    def scale_by_batch(adata: ad.AnnData, batch_key: str) -> ad.AnnData:
-        return ad.concat(
-        {
-            k: sc.pp.scale(adata[idx], copy=True)
-            for k, idx in adata.obs.groupby(batch_key).indices.items()
-        },
-        merge="first"
-    )
-    adata=scale_by_batch(adata,"Sample")
+    #def scale_by_batch(adata: ad.AnnData, batch_key: str) -> ad.AnnData:
+        #return ad.concat(
+       # {
+          #  k: sc.pp.scale(adata[idx], copy=True)
+         #   for k, idx in adata.obs.groupby(batch_key).indices.items()
+       # },
+       # merge="first"
+    #)
+    #adata=scale_by_batch(adata,"Sample")
     # Perform PCA and neighbors
     sc.tl.pca(adata, svd_solver='arpack', n_comps=args.n_comps)
-    sc.pp.neighbors(adata, n_neighbors=args.n_neighbors, n_pcs=args.n_comps)
     
     # Harmony integration
     sce.pp.harmony_integrate(adata, ['Cohort','Sample'], verbose=1, max_iter_harmony=50,theta=args.theta,nclust=args.nclust)
@@ -50,10 +50,10 @@ def main(args):
     sc.tl.umap(adata)
     
     
-    sc.tl.leiden(adata, resolution=0.25, key_added='leiden_025')
-    sc.tl.leiden(adata, resolution=0.50, key_added='leiden_050')
-    sc.tl.leiden(adata, resolution=0.75, key_added='leiden_075')
-    sc.tl.leiden(adata, resolution=1, key_added='leiden_1')
+    sc.tl.leiden(adata, resolution=0.20, key_added='leiden_020')
+    sc.tl.leiden(adata, resolution=0.40, key_added='leiden_040')
+    sc.tl.leiden(adata, resolution=0.60, key_added='leiden_060')
+    sc.tl.leiden(adata, resolution=0.80, key_added='leiden_080')
     
     # Create a trimmed down h5ad file
     adata_new = sc.read_h5ad(args.input_file)
@@ -63,8 +63,8 @@ def main(args):
     
     columns_to_copy = [
         'Sample', 'nCount_RNA', 'nFeature_RNA', 'mitoRatio',
-        'Cohort', 'leiden_025',
-        'leiden_050', 'leiden_075', 'leiden_1'
+        'Cohort', 'leiden_020',
+        'leiden_040', 'leiden_060', 'leiden_080'
     ]
     
    
@@ -73,7 +73,7 @@ def main(args):
         adata_w.obs[column] = adata.obs[column].copy()
     adata_w.obsm['X_pca'] = adata.obsm['X_pca']
     adata_w.obsm['X_umap'] = adata.obsm['X_umap']
-    
+    adata_w.varm['PCs']=adata.varm['PCs']
     # Write the output h5ad file
     adata_w.write_h5ad(args.output_file)
 
