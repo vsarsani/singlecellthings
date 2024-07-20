@@ -73,7 +73,7 @@ def main(args):
         adata_w.obs[column] = adata.obs[column].copy()
     adata_w.obsm['X_pca'] = adata.obsm['X_pca']
     adata_w.obsm['X_umap'] = adata.obsm['X_umap']
-    adata_w.varm['PCs']=adata.varm['PCs']
+    #adata_w.varm['PCs']=adata.varm['PCs']
     # Write the output h5ad file
     adata_w.write_h5ad(args.output_file)
 
