@@ -21,25 +21,25 @@ def main(args):
     #ribo_genes = adata.var_names.str.startswith(("RPS", "RPL"))
     #hb_genes = adata.var_names.str.contains("^HB[^(P)]")
     #remove = np.logical_or.reduce((mito_genes, ribo_genes, hb_genes))
-    keep=np.invert(adata.var['exclude'])
+    #keep=np.invert(adata.var['exclude'])
     #keep = np.invert(remove)
     adata = adata[:, keep]
     
     # Normalize, log transform, and find highly variable genes
-    sc.pp.normalize_total(adata, target_sum=1e4)
-    sc.pp.log1p(adata)
-    sc.pp.highly_variable_genes(adata, n_top_genes=args.n_top_genes, batch_key=args.batch_key)
-    def scale_by_batch(adata: ad.AnnData, batch_key: str) -> ad.AnnData:
-        return ad.concat(
-        {
-             k: sc.pp.scale(adata[idx], copy=True)
-            for k, idx in adata.obs.groupby(batch_key).indices.items()
-         },
-       merge="first"
-    )
-    adata=scale_by_batch(adata,"Sample")
+    #sc.pp.normalize_total(adata, target_sum=1e4)
+    #sc.pp.log1p(adata)
+    #sc.pp.highly_variable_genes(adata, n_top_genes=args.n_top_genes, batch_key=args.batch_key)
+    #def scale_by_batch(adata: ad.AnnData, batch_key: str) -> ad.AnnData:
+       # return ad.concat(
+        #{
+            # k: sc.pp.scale(adata[idx], copy=True)
+            #for k, idx in adata.obs.groupby(batch_key).indices.items()
+         #},
+       #merge="first"
+    #)
+    #adata=scale_by_batch(adata,"Sample")
     # Perform PCA and neighbors
-    sc.tl.pca(adata, svd_solver='arpack', n_comps=args.n_comps)
+    #sc.tl.pca(adata, svd_solver='arpack', n_comps=args.n_comps)
     
     # Harmony integration
     sce.pp.harmony_integrate(adata, ['Cohort','Sample'], verbose=1, max_iter_harmony=50,theta=args.theta,nclust=args.nclust)
