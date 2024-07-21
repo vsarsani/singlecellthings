@@ -29,15 +29,15 @@ def main(args):
     sc.pp.normalize_total(adata, target_sum=1e4)
     sc.pp.log1p(adata)
     sc.pp.highly_variable_genes(adata, n_top_genes=args.n_top_genes, batch_key=args.batch_key)
-    #def scale_by_batch(adata: ad.AnnData, batch_key: str) -> ad.AnnData:
-        #return ad.concat(
-       # {
-          #  k: sc.pp.scale(adata[idx], copy=True)
-         #   for k, idx in adata.obs.groupby(batch_key).indices.items()
-       # },
-       # merge="first"
-    #)
-    #adata=scale_by_batch(adata,"Sample")
+    def scale_by_batch(adata: ad.AnnData, batch_key: str) -> ad.AnnData:
+        return ad.concat(
+        {
+             k: sc.pp.scale(adata[idx], copy=True)
+            for k, idx in adata.obs.groupby(batch_key).indices.items()
+         },
+       merge="first"
+    )
+    adata=scale_by_batch(adata,"Sample")
     # Perform PCA and neighbors
     sc.tl.pca(adata, svd_solver='arpack', n_comps=args.n_comps)
     
