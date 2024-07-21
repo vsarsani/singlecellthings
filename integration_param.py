@@ -23,7 +23,7 @@ def main(args):
     #remove = np.logical_or.reduce((mito_genes, ribo_genes, hb_genes))
     #keep=np.invert(adata.var['exclude'])
     #keep = np.invert(remove)
-    adata = adata[:, keep]
+    #adata = adata[:, keep]
     
     # Normalize, log transform, and find highly variable genes
     #sc.pp.normalize_total(adata, target_sum=1e4)
