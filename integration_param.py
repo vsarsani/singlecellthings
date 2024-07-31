@@ -54,6 +54,7 @@ def main(args):
     sc.tl.leiden(adata, resolution=0.40, key_added='leiden_040')
     sc.tl.leiden(adata, resolution=0.60, key_added='leiden_060')
     sc.tl.leiden(adata, resolution=0.80, key_added='leiden_080')
+    sc.tl.leiden(adata, resolution=1, key_added='leiden_1')
     
     # Create a trimmed down h5ad file
     adata_new = sc.read_h5ad(args.input_file)
