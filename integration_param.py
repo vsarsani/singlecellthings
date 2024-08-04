@@ -7,7 +7,7 @@ import scanpy.external as sce
 import anndata as ad
 
 def main(args):
-    sc.settings.n_jobs = 64
+    sc.settings.n_jobs = 60
     
     # Read the input h5ad file
     adata = sc.read_h5ad(args.input_file)
