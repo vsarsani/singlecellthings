@@ -4,6 +4,8 @@
 **Connect to the login node:**
 ```bash
 ssh <username>@login00.broadinstitute.org
+use UGER
+ish -l h_vmem=16G
 ```
 
 ## First-Time Setup:
