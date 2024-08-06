@@ -49,7 +49,7 @@ ish -l h_vmem=16G
    # or
    pip install jupyterlab
    pip install jupyter-resource-usage
-   conda install conda-forge::r-base
+   conda install conda-forge::r-base r-essentials
    conda install anaconda::ipykernel
    R
    IRkernel::installspec()
