@@ -9,8 +9,9 @@ ssh <username>@login00.broadinstitute.org
 ## First-Time Setup:
 
 1. **Transfer Files or Scripts from Cloud:**
-   - Use Google Cloud SDK:
+
    ```bash
+   use Google-Cloud-SDK
    gcloud storage cp gs://example .
    ```
 
