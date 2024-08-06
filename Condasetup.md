@@ -58,7 +58,8 @@ ish -l h_vmem=16G
 5. **Configure Jupyter Lab:**
    ```bash
    export HOSTADDR=$(hostname -i)
-   jupyter notebook --generate-config
+   jupyter lab --generate-config
+   jupyter lab password
    ```
 
    - Edit the configuration file: `/home/unix/<username>/.jupyter/jupyter_lab_config.py`
