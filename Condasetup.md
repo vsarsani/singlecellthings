@@ -76,7 +76,8 @@ ish -l h_vmem=16G
 6. **Add a Jupyter Lab Shortcut to `.bashrc`:**
    - Choose ports like 8788, 8789, 8790, etc.
    ```bash
-   echo "alias startjupyter='jupyter lab --ip 10.192.4.44 --port 8788 --no-browser'" >> ~/.bashrc
+   echo "startjupyter() { jupyter lab --ip \$(hostname -i) --port 8788 --no-browser; }" >> ~/.bashrc
+
    source ~/.bashrc
    ```
 
