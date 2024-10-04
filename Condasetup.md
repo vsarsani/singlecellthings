@@ -63,7 +63,7 @@ ish -l h_vmem=16G
 
 1. **Connect to the compute node and Jupyter:**
    ```bash
-   ssh <username>@slurm-bits-bigmem-d002
+ssh <username>@slurm-bits-bigmem-d002
  srun --nodes=1  --mem=128GB  --time=06:00:00 --cpus-per-task=8 --pty /bin/bash
 HOST_IP=$(hostname -i)
 jupyter lab --ip $HOST_IP --port 8790 --no-browser &
