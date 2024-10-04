@@ -55,40 +55,21 @@ ish -l h_vmem=16G
    IRkernel::installspec()
    ```
 
-5. **Configure Jupyter Lab:**
-   ```bash
-   export HOSTADDR=$(hostname -i)
-   jupyter lab --generate-config
-   jupyter lab password
-   ```
 
-   - Edit the configuration file: `/home/unix/<username>/.jupyter/jupyter_lab_config.py`
-     - First line: add `import os`
-     - Line 911: uncomment and replace with:
-       ```python
-       c.ServerApp.ip = os.environ['HOSTADDR']
-       ```
-     - Line 960: do the same
-       ```python
-       c.ServerApp.local_hostnames = [os.environ['HOSTADDR']]
-       ```
 
-6. **Add a Jupyter Lab Shortcut to `.bashrc`:**
-   - Choose ports like 8788, 8789, 8790, etc.
-   ```bash
-   echo "startjupyter() { jupyter lab --ip \$(hostname -i) --port 8788 --no-browser; }" >> ~/.bashrc
-
-   source ~/.bashrc
-   ```
+   
 
 ## Finally:
 
-1. **Connect to the compute node:**
+1. **Connect to the compute node and Jupyter:**
    ```bash
    ssh <username>@slurm-bits-bigmem-d002
+ srun --nodes=1  --mem=128GB  --time=06:00:00 --cpus-per-task=8 --pty /bin/bash
+HOST_IP=$(hostname -i)
+jupyter lab --ip $HOST_IP --port 8790 --no-browser &
    ```
 
-2. **Start Jupyter Lab:**
+2. **Go to browser and replace IP with what is printed when you run above command:**
    ```bash
-   startjupyter
+   http://10.192.XX.XX:8790/lab
    ```
