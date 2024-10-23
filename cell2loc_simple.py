@@ -154,6 +154,26 @@ class CorticalThicknessPredictor:
         
         print(f"Predicted 'i' for {len(self.predicted_i_model)} new cells using Gaussian kernel smoothing.")
 
+    def combine_predictions(self, alpha=0.5):
+        """
+        Combine the nearest neighbor prediction of 'i' and the model prediction of 'i'
+        for new cells using a weighted sum with regularization parameter alpha.
+        """
+        # Ensure both predictions are for the same number of cells (new cells)
+        if len(self.predicted_i_new) != len(self.predicted_i_model):
+            raise ValueError(f"Mismatch in sizes: nearest neighbor predictions {len(self.predicted_i_new)} "
+                             f"and model predictions {len(self.predicted_i_model)} must have the same number of cells.")
+        
+        print(f"Combining nearest neighbor and model predictions using alpha = {alpha}...")
+        
+        # Combine nearest neighbor and model predictions
+        self.predicted_i_final = alpha * self.predicted_i_new + (1 - alpha) * self.predicted_i_model
+        
+        # Add 'predicted_i_combined' to the new cells' anndata object (combined prediction)
+        self.new_cells_adata.obs['predicted_i_combined'] = self.predicted_i_final
+        
+        print(f"Combined predictions for {len(self.predicted_i_final)} new cells.")
+
     def predict_final(self, alpha=0.9):
         """
         Use the default alpha value of 0.5 to make final predictions for 'i' in new cells.
