@@ -51,7 +51,7 @@ srun -C container --nodes=1 --mem=128GB --cpus-per-task=4 --pty --partition=hpcx
 Once the resources are allocated, navigate to your working directory in `/broad/macosko`. For example:
 
 ```bash
-cd /broad/macosko/data/NPH/
+cd /broad/macosko/data/XXX/
 ```
 
 ## 5. Create and Edit Dockerfile
