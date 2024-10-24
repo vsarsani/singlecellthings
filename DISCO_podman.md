@@ -1,3 +1,24 @@
+#Copy your files from gcloud to /broad/macosko/data/
+
+
+**Connect to the login node:**
+```bash
+ssh <username>@login00.broadinstitute.org
+use UGER
+ish -l h_vmem=16G
+```
+
+## First-Time Setup:
+
+1. **Transfer Files or Scripts from Cloud:**
+
+   ```bash
+   use Google-Cloud-SDK
+   mkdir -p /broad/macosko/data/XXX
+   gcloud storage cp gs://example /broad/macosko/data/XXX
+   ```
+
+
 
 # Instructions for Setting Up RStudio and JupyterLab Environment on DISCO
 
