@@ -10,12 +10,12 @@ ish -l h_vmem=16G
 
 ## First-Time Setup:
 
- **Transfer Files or Scripts from Cloud:**
+ **Create your directory (if you haven't). Transfer Files or Scripts from Cloud:**
 
    ```bash
-   use Google-Cloud-SDK
-   mkdir -p /broad/macosko/data/XXX
-   gcloud storage cp gs://example /broad/macosko/data/XXX
+mkdir -p /broad/macosko/data/XXX
+use Google-Cloud-SDK
+gcloud storage cp gs://example /broad/macosko/data/XXX
    ```
 
 
