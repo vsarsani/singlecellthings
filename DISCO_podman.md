@@ -114,5 +114,10 @@ EXPOSE 8787 8888
 # Set CMD to run both RStudio and JupyterLab when the container is started
 CMD ["/usr/local/bin/start_services.sh"]
 ```
-
+Save it 
 6. Build and run the Dockerfile following your resource allocation instructions.
+
+```bash
+podman build -t rstudioconda --build-arg USERNAME=XXXX --build-arg PASSWORD=XXXX -f Dockerfile .
+```
+
