@@ -131,7 +131,7 @@ hostname -i
 conda activate scpy
 podman run -d --name rstudio_container -p 8787:8787 -p 8888:8888 rstudioconda
 http://10.192.XX.XX:8787/lab #for Jupyter
-http://10.192.XX.XX:8888 # for R-studio
+http://10.192.XX.XX:8787 # for R-studio
 
    ```
 
