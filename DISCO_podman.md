@@ -124,20 +124,15 @@ podman build -t rstudioconda --build-arg USERNAME=XXXX --build-arg PASSWORD=XXXX
 
 Once you have built and created the image in Podman, follow the steps below to access RStudio and JupyterLab.
 
-### 7.1 Running RStudio in Podman
 
-To run RStudio from the created image, use the following command:
 
 ```bash
+HOST_IP=$(hostname -i)
+conda activate scpy
 podman run -d --name rstudio_container -p 8787:8787 -p 8888:8888 rstudioconda
-
-  conda activate scpy
+http://10.192.XX.XX:8787/lab #for Jupyter
+http://10.192.XX.XX:8888 # for R-studio
 
    ```
 
- **Go to browser and replace IP with what is printed when you run above command:**
-   ```bash
-   http://10.192.XX.XX:8787/lab
-http://10.192.XX.XX:8787
-   ```
 
