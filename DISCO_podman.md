@@ -98,9 +98,73 @@ RUN R -e "install.packages('Seurat')" && \
     R -e "library('devtools'); install_github('lme4/lme4', dependencies = TRUE)" && \
     R -e "install.packages('devtools')"
 
-# Create a startup script to run both RStudio and JupyterLab
-RUN echo '#!/bin/bash \n/init & \n/home/$USERNAME/miniconda3/bin/jupyter lab --ip=0.0.0.0 --no-browser --allow-root & \nwait' > /usr/local/bin/start_services.sh
-RUN chmod +x /usr/local/bin/start_services.sh
+# Set the working directory to the home directory
+WORKDIR /home/$USERNAME
+
+# Switch back to the created user
+USER $USERNAME
+
+# Expose the port for RStudio
+EXPOSE 8787
+
+# Set CMD to start RStudio when the container is run
+CMD ["/init"]
+
+(scpy) -bash:login00:/broad/macosko/data/NPH 1003 $  srun --nodes=1 --mem=1536GB --time=10:00:00 --cpus-per-task=24  --partition=hpcx_macosko --pty /bin/bash^C
+(scpy) -bash:login00:/broad/macosko/data/NPH 1003 $ cat Dockerfile
+# Use rocker/tidyverse as base image
+FROM docker.io/rocker/tidyverse:latest
+
+# Set environment variables for username and password
+ARG USERNAME=your_username
+ARG PASSWORD=your_password
+
+# Switch to root to install system packages
+USER root
+
+# Install necessary packages for downloading and installing Miniconda
+RUN apt-get update && apt-get install -y \
+    wget \
+    bzip2 \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create the user and set the password
+RUN useradd -m $USERNAME && echo "$USERNAME:$PASSWORD" | chpasswd
+
+# Install Miniconda
+RUN mkdir -p /home/$USERNAME/miniconda3 && \
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /home/$USERNAME/miniconda3/miniconda.sh && \
+    bash /home/$USERNAME/miniconda3/miniconda.sh -b -u -p /home/$USERNAME/miniconda3 && \
+    rm -rf /home/$USERNAME/miniconda3/miniconda.sh && \
+    /home/$USERNAME/miniconda3/bin/conda init bash && \
+    echo ". /home/$USERNAME/miniconda3/etc/profile.d/conda.sh" >> /home/$USERNAME/.bashrc
+
+# Update conda and install dependencies
+RUN /home/$USERNAME/miniconda3/bin/conda update -n base conda -y && \
+    /home/$USERNAME/miniconda3/bin/conda install -n base conda-libmamba-solver -y && \
+    /home/$USERNAME/miniconda3/bin/conda config --set solver libmamba && \
+    /home/$USERNAME/miniconda3/bin/conda create --name scpy -y && \
+    /home/$USERNAME/miniconda3/bin/conda update -n base conda -y && \
+    /home/$USERNAME/miniconda3/bin/conda install -n scpy -c conda-forge scanpy python-igraph leidenalg -y && \
+    /home/$USERNAME/miniconda3/bin/pip install scanpy harmonypy
+
+# Install JupyterLab and R-related packages
+RUN /home/$USERNAME/miniconda3/bin/conda install -n scpy -c conda-forge jupyterlab
+
+# Install R packages and dependencies
+RUN R -e "install.packages('Seurat')" && \
+    R -e "install.packages(c('BPCells', 'presto', 'glmGamPoi'))" && \
+    R -e "if (!require('remotes')) install.packages('remotes')" && \
+    R -e "remotes::install_github('satijalab/seurat-data', quiet = TRUE)" && \
+    R -e "remotes::install_github('satijalab/azimuth', quiet = TRUE)" && \
+    R -e "remotes::install_github('satijalab/seurat-wrappers', quiet = TRUE)" && \
+    R -e "if (!require('BiocManager', quietly = TRUE)) install.packages('BiocManager')" && \
+    R -e "BiocManager::install(c('limma', 'variancePartition', 'DESeq2', 'Nebulosa', 'MAST'))" && \
+    R -e "library('devtools'); install_github('lme4/lme4', dependencies = TRUE)" && \
+    R -e "install.packages('devtools')"
 
 # Set the working directory to the home directory
 WORKDIR /home/$USERNAME
@@ -108,11 +172,11 @@ WORKDIR /home/$USERNAME
 # Switch back to the created user
 USER $USERNAME
 
-# Expose the ports for RStudio and JupyterLab
-EXPOSE 8787 8888
+# Expose the port for RStudio
+EXPOSE 8787
 
-# Set CMD to run both RStudio and JupyterLab when the container is started
-CMD ["/usr/local/bin/start_services.sh"]
+# Set CMD to start RStudio when the container is run
+CMD ["/init"]
 ```
 Save it 
 6. Build and run the Dockerfile following your resource allocation instructions.
@@ -120,4 +184,27 @@ Save it
 ```bash
 podman build -t rstudioconda --build-arg USERNAME=XXXX --build-arg PASSWORD=XXXX -f Dockerfile .
 ```
+
+
+
+## 7. Running RStudio and JupyterLab in Podman
+
+Once you have built and created the image in Podman, follow the steps below to access RStudio and JupyterLab.
+
+### 7.1 Running RStudio in Podman
+
+To run RStudio from the created image, use the following command:
+
+```bash
+podman run -d --name rstudio_container -p 8787:8787 -p 8888:8888 rstudioconda
+
+  conda activate scpy
+
+   ```
+
+ **Go to browser and replace IP with what is printed when you run above command:**
+   ```bash
+   http://10.192.XX.XX:8787/lab
+http://10.192.XX.XX:8787
+   ```
 
