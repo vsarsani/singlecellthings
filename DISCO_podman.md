@@ -10,7 +10,7 @@ ish -l h_vmem=16G
 
 ## First-Time Setup:
 
-1. **Transfer Files or Scripts from Cloud:**
+ **Transfer Files or Scripts from Cloud:**
 
    ```bash
    use Google-Cloud-SDK
