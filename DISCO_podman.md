@@ -66,7 +66,7 @@ podman run -d --name rstudio-container     -e USER=XXXX   -e PASSWORD=XXXX     -
 
 
 
-## 7. Running RStudio and JupyterLab in Podman
+## 6. Running RStudio and JupyterLab in Podman
 
 Once you have built and created the image in Podman, follow the steps below to access RStudio 
 
