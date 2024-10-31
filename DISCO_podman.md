@@ -35,7 +35,7 @@ ssh login00.broadinstitute.org
 Check the available resources for a specific node by using this command:
 
 ```bash
-scontrol show node "slurm-bits-bigmem-d002" | grep "AllocTRES"| tr '=' '	'|tr ',' '	'| awk  '{cores=64-$3; mem=(3584-$5)/1024; print "Remaining cores: " cores "\nRemaining memory (TB):: " mem}'
+scontrol show node "slurm-bits-bigmem-d002" | grep "AllocTRES"| tr '=' '\t'|tr ',' '\t'| awk  '{cores=64-$3; mem=(3584-$5)/1024; print "Remaining cores: " cores "\nRemaining memory (TB):: " mem}'
 ```
 
 ## 3. Request Resources
