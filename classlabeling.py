@@ -116,12 +116,10 @@ def integrate_and_transfer(sample, reference_file):
 
     # Label transfer
     logging.info("Performing label transfer...")
-    class_def = label_transfer(distances_harmony, reference.obs.Class_8, sample.obs.index)
+    class_def = label_transfer(distances_harmony, reference.obs.cell.type, sample.obs.index)
     sample.obs['predicted_class'] = class_def
-    subclass_def = label_transfer(distances_harmony, reference.obs.Subclass, sample.obs.index)
-    sample.obs['predicted_subclass'] = subclass_def
-    supertype_def = label_transfer(distances_harmony, reference.obs.Supertype, sample.obs.index)
-    sample.obs['predicted_supertype'] = supertype_def
+    subclass_def = label_transfer(distances_harmony, reference.obs.state, sample.obs.index)
+    sample.obs['predicted_state'] = subclass_def
     logging.info("Integration and transfer completed.")
     
     return sample
@@ -140,7 +138,7 @@ def main(sample_file, reference_file, pickl_ref1, pickl_ref2, sampleprefix):
     sample_added_annots_integ = integrate_and_transfer(sample_filtered, reference_file)
     celltypist1, celltypist2 = run_celltypist(sample_added_annots_integ, pickl_ref1, pickl_ref2)
     sample_added_annots_integ.obs['Class_celltypist_label'] = celltypist1.predicted_labels['majority_voting']
-    sample_added_annots_integ.obs['Subclass_celltypist_label'] = celltypist2.predicted_labels['majority_voting']
+    sample_added_annots_integ.obs['State_celltypist_label'] = celltypist2.predicted_labels['majority_voting']
 
     # Save the obs DataFrame to a CSV file
     sample_added_annots_integ.obs.to_csv(f"{sampleprefix}_annotated.csv")
