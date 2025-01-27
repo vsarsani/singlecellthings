@@ -116,7 +116,7 @@ def integrate_and_transfer(sample, reference_file):
 
     # Label transfer
     logging.info("Performing label transfer...")
-    class_def = label_transfer(distances_harmony, reference.obs.cell.type, sample.obs.index)
+    class_def = label_transfer(distances_harmony, reference.obs.celltype, sample.obs.index)
     sample.obs['predicted_class'] = class_def
     subclass_def = label_transfer(distances_harmony, reference.obs.state, sample.obs.index)
     sample.obs['predicted_state'] = subclass_def
@@ -125,20 +125,17 @@ def integrate_and_transfer(sample, reference_file):
     return sample
 
 # Run Celltypist
-def run_celltypist(sample, pickl_ref1, pickl_ref2):
+def run_celltypist(sample, pickl_ref1):
     celltypist1 = models.Model.load(pickl_ref1)
-    celltypist2 = models.Model.load(pickl_ref2)
     result1 = celltypist.annotate(sample, model=celltypist1, majority_voting = True)
-    result2 = celltypist.annotate(sample, model=celltypist2, majority_voting = True)
-    return result1, result2
+    return result1
 
 # Main function
-def main(sample_file, reference_file, pickl_ref1, pickl_ref2, sampleprefix):
+def main(sample_file, reference_file, pickl_ref1, sampleprefix):
     sample_filtered = preprocess(sample_file, reference_file, sampleprefix)
     sample_added_annots_integ = integrate_and_transfer(sample_filtered, reference_file)
-    celltypist1, celltypist2 = run_celltypist(sample_added_annots_integ, pickl_ref1, pickl_ref2)
+    celltypist1= run_celltypist(sample_added_annots_integ, pickl_ref1)
     sample_added_annots_integ.obs['Class_celltypist_label'] = celltypist1.predicted_labels['majority_voting']
-    sample_added_annots_integ.obs['State_celltypist_label'] = celltypist2.predicted_labels['majority_voting']
 
     # Save the obs DataFrame to a CSV file
     sample_added_annots_integ.obs.to_csv(f"{sampleprefix}_annotated.csv")
@@ -151,9 +148,8 @@ if __name__ == "__main__":
     parser.add_argument("--sample_file", type=str, help="Path to the sample h5ad file")
     parser.add_argument("--reference_file", type=str, help="Path to the reference h5ad file")
     parser.add_argument("--pickl_ref1", type=str, help="Path to the first Celltypist model pickle file")
-    parser.add_argument("--pickl_ref2", type=str, help="Path to the second Celltypist model pickle file")
     parser.add_argument("--sampleprefix", type=str, help="Prefix for the output files")
 
     args = parser.parse_args()
 
-    main(args.sample_file, args.reference_file, args.pickl_ref1, args.pickl_ref2, args.sampleprefix)
+    main(args.sample_file, args.reference_file, args.pickl_ref1, args.sampleprefix)
