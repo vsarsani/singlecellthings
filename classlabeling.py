@@ -116,9 +116,9 @@ def integrate_and_transfer(sample, reference_file):
 
     # Label transfer
     logging.info("Performing label transfer...")
-    class_def = label_transfer(distances_harmony, reference.obs.celltype, sample.obs.index)
+    class_def = label_transfer(distances_harmony, reference.obs['cell.type'], sample.obs.index)
     sample.obs['predicted_class'] = class_def
-    subclass_def = label_transfer(distances_harmony, reference.obs.state, sample.obs.index)
+    subclass_def = label_transfer(distances_harmony, reference.obs['state'], sample.obs.index)
     sample.obs['predicted_state'] = subclass_def
     logging.info("Integration and transfer completed.")
     
