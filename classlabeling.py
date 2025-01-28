@@ -44,7 +44,6 @@ def preprocess(sample_file, reference_file, sampleprefix):
 
     # Subset the dataset
     sample_filtered = sample[filtered_cells, :].copy()
-
     logging.info(f"Filtered dataset has {sample_filtered.shape[0]} cells.")
 
     # Calculate doublet rate
@@ -63,15 +62,12 @@ def preprocess(sample_file, reference_file, sampleprefix):
     if 'predicted_doublets' in sample_filtered.obs:
         if sample_filtered.obs['predicted_doublets'].isnull().all():
             logging.warning("Column 'predicted_doublets' is all None, proceeding without filtering.")
-         else:
+        else:
             sample_filtered = sample_filtered[~sample_filtered.obs['predicted_doublets']].copy()
 
-    # Filter out predicted doublets
-    sample_filtered = sample_filtered[~sample_filtered.obs['predicted_doublets']].copy()
-
-
-
     logging.info(f"Filtered dataset saved with {sample_filtered.shape[0]} cells.")
+
+    # Normalize and scale the data
     sc.pp.normalize_total(sample_filtered, target_sum=1e4)
     sc.pp.log1p(sample_filtered)
     sc.pp.highly_variable_genes(sample_filtered, min_mean=0.0125, max_mean=3, min_disp=0.25)
@@ -80,18 +76,19 @@ def preprocess(sample_file, reference_file, sampleprefix):
     sc.tl.pca(sample_filtered, svd_solver='arpack')
     sc.pp.neighbors(sample_filtered, n_neighbors=10, n_pcs=50)
     sc.tl.umap(sample_filtered)
+
+    # Subset by reference variable names
     sample_filtered = sample_filtered[:, reference.var_names]
     return sample_filtered
-
-
 
 # Integration and label transfer
 def integrate_and_transfer(sample, reference_file):
     logging.info("Reading reference data...")
     reference = sc.read_h5ad(reference_file, chunk_size=10000)
+
     # Concatenate and integrate
     logging.info("Concatenating and integrating...")
-    adata_concat = reference.concatenate(sample, batch_categories=["ref", "new"])    
+    adata_concat = reference.concatenate(sample, batch_categories=["ref", "new"])
     sc.tl.pca(adata_concat)
     sc.pp.neighbors(adata_concat, n_pcs=30, use_rep='X_pca')
     sce.pp.harmony_integrate(adata_concat, 'batch')
@@ -127,20 +124,19 @@ def integrate_and_transfer(sample, reference_file):
 # Run Celltypist
 def run_celltypist(sample, pickl_ref1):
     celltypist1 = models.Model.load(pickl_ref1)
-    result1 = celltypist.annotate(sample, model=celltypist1, majority_voting = True)
+    result1 = celltypist.annotate(sample, model=celltypist1, majority_voting=True)
     return result1
 
 # Main function
 def main(sample_file, reference_file, pickl_ref1, sampleprefix):
     sample_filtered = preprocess(sample_file, reference_file, sampleprefix)
     sample_added_annots_integ = integrate_and_transfer(sample_filtered, reference_file)
-    celltypist1= run_celltypist(sample_added_annots_integ, pickl_ref1)
+    celltypist1 = run_celltypist(sample_added_annots_integ, pickl_ref1)
     sample_added_annots_integ.obs['Class_celltypist_label'] = celltypist1.predicted_labels['majority_voting']
 
     # Save the obs DataFrame to a CSV file
     sample_added_annots_integ.obs.to_csv(f"{sampleprefix}_annotated.csv")
-
-    logging.info(f"Saved annotated data to  {sampleprefix}_annotated.csv")
+    logging.info(f"Saved annotated data to {sampleprefix}_annotated.csv")
 
 if __name__ == "__main__":
     # Set up argument parser
