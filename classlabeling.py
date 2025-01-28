@@ -60,11 +60,11 @@ def preprocess(sample_file, reference_file, sampleprefix):
     sample_filtered.obs['predicted_doublets'] = predicted_doublets
 
     # Handle None values in 'predicted_doublets'
-    #if 'predicted_doublets' in sample_filtered.obs:
-        #if sample_filtered.obs['predicted_doublets'].isnull().all():
-           # logging.warning("Column 'predicted_doublets' is all None, proceeding without filtering.")
-        #else:
-            #sample_filtered = sample_filtered[~sample_filtered.obs['predicted_doublets']].copy()
+    if 'predicted_doublets' in sample_filtered.obs:
+        if sample_filtered.obs['predicted_doublets'].isnull().all():
+            logging.warning("Column 'predicted_doublets' is all None, proceeding without filtering.")
+         else:
+            sample_filtered = sample_filtered[~sample_filtered.obs['predicted_doublets']].copy()
 
     # Filter out predicted doublets
     sample_filtered = sample_filtered[~sample_filtered.obs['predicted_doublets']].copy()
